@@ -6,33 +6,32 @@ const GRID_HEIGHT: usize = 100;
 #[macroquad::main("BasicShapes")]
 async fn main() {
     let mut grid = vec![vec![0; GRID_WIDTH]; GRID_HEIGHT];
-    
+
     let mut start_stop = false;
     let mut grid_show = true;
     loop {
-        if is_key_pressed(KeyCode::Space){
+        if is_key_pressed(KeyCode::Space) {
             start_stop = !start_stop;
         }
-        if is_key_pressed(KeyCode::G){
+        if is_key_pressed(KeyCode::G) {
             grid_show = !grid_show;
         }
-        if !start_stop &&is_mouse_button_pressed(MouseButton::Left){
+        if !start_stop && is_mouse_button_pressed(MouseButton::Left) {
             let height_scale = screen_height() / (GRID_HEIGHT as f32);
             let width_scale = screen_width() / (GRID_WIDTH as f32);
-            let (column_pixel,row_pixel) = mouse_position();
-            let row_index = (row_pixel/height_scale).floor() as usize;
-            let column_index = (column_pixel/width_scale).floor() as usize;
-            if grid[row_index][column_index] == 1{
+            let (column_pixel, row_pixel) = mouse_position();
+            let row_index = (row_pixel / height_scale).floor() as usize;
+            let column_index = (column_pixel / width_scale).floor() as usize;
+            if grid[row_index][column_index] == 1 {
                 grid[row_index][column_index] = 0;
-            }
-            else {
+            } else {
                 grid[row_index][column_index] = 1;
             }
         }
         clear_background(WHITE);
         //Draw the current state of the grid
-        draw(&grid,&grid_show);
-        if start_stop{
+        draw(&grid, &grid_show);
+        if start_stop {
             let neighbour_grid = calculate_neighbour_amount_grid(&grid);
             transition(&mut grid, &neighbour_grid);
         }
@@ -40,7 +39,7 @@ async fn main() {
         next_frame().await
     }
 }
-fn transition(grid: &mut Vec<Vec<i32>>,neighbours: & Vec<Vec<i32>>){
+fn transition(grid: &mut Vec<Vec<i32>>, neighbours: &Vec<Vec<i32>>) {
     let mut row_index: usize = 0;
     let mut col_index: usize = 0;
     for row in neighbours {
@@ -134,10 +133,10 @@ fn calculate_neighbour_amount_grid(grid: &Vec<Vec<i32>>) -> Vec<Vec<i32>> {
     neighbour_amount_grid
 }
 //Draws the grid as squares
-fn draw(grid: &Vec<Vec<i32>>,grid_show:&bool) {
+fn draw(grid: &Vec<Vec<i32>>, grid_show: &bool) {
     let height_scale = screen_height() / GRID_HEIGHT as f32;
     let width_scale = screen_width() / GRID_WIDTH as f32;
-    
+
     let mut row_index: f32 = 0.0;
     let mut col_index: f32 = 0.0;
     for row in grid {
@@ -151,8 +150,15 @@ fn draw(grid: &Vec<Vec<i32>>,grid_show:&bool) {
                     BLACK,
                 );
             }
-            if *grid_show{
-                draw_rectangle_lines(col_index * width_scale, row_index * height_scale, width_scale, height_scale, 1.0, BLACK);
+            if *grid_show {
+                draw_rectangle_lines(
+                    col_index * width_scale,
+                    row_index * height_scale,
+                    width_scale,
+                    height_scale,
+                    1.0,
+                    BLACK,
+                );
             }
             col_index += 1.0;
         }
@@ -162,12 +168,12 @@ fn draw(grid: &Vec<Vec<i32>>,grid_show:&bool) {
 }
 
 #[cfg(test)]
-mod tests{
+mod tests {
     use super::*;
 
     #[test]
-    fn underpopulation_test(){
-        let mut test_grid = vec![vec![0;100];100];
+    fn underpopulation_test() {
+        let mut test_grid = vec![vec![0; 100]; 100];
         //No neighbours
         test_grid[0][0] = 1;
         //One neighbour
@@ -176,12 +182,12 @@ mod tests{
 
         let neighbours = calculate_neighbour_amount_grid(&test_grid);
         transition(&mut test_grid, &neighbours);
-        assert_eq!(test_grid,vec![vec![0;100];100])
+        assert_eq!(test_grid, vec![vec![0; 100]; 100])
     }
 
     #[test]
-    fn outlive(){
-        let mut test_grid = vec![vec![0;100];100];
+    fn outlive() {
+        let mut test_grid = vec![vec![0; 100]; 100];
         //Two neighbours
         test_grid[0][0] = 1;
         test_grid[0][1] = 1;
@@ -194,13 +200,13 @@ mod tests{
 
         let neighbours = calculate_neighbour_amount_grid(&test_grid);
         transition(&mut test_grid, &neighbours);
-        assert_eq!(test_grid[0][1],1);
-        assert_eq!(test_grid[3][3],1);
+        assert_eq!(test_grid[0][1], 1);
+        assert_eq!(test_grid[3][3], 1);
     }
 
     #[test]
-    fn overpopulation(){
-        let mut test_grid = vec![vec![0;100];100];
+    fn overpopulation() {
+        let mut test_grid = vec![vec![0; 100]; 100];
         //Four neighbours
         test_grid[3][3] = 1;
         test_grid[2][2] = 1;
@@ -216,7 +222,6 @@ mod tests{
         test_grid[6][5] = 1;
         test_grid[6][7] = 1;
 
-
         let neighbours = calculate_neighbour_amount_grid(&test_grid);
         transition(&mut test_grid, &neighbours);
         assert_eq!(test_grid[3][3], 0);
@@ -224,8 +229,8 @@ mod tests{
     }
 
     #[test]
-    fn reproduction(){
-        let mut test_grid = vec![vec![0;100];100];
+    fn reproduction() {
+        let mut test_grid = vec![vec![0; 100]; 100];
         //Reproduction [3][3] has 3 neighbours
         test_grid[2][2] = 1;
         test_grid[2][4] = 1;
