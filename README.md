@@ -1,2 +1,14 @@
-# game-of-life
+# Game of life
 An implementation of Conway's game of life using Rust and Wasm
+## Needed
+macroquad = "0.4"
+rust = "1.86.0"
+## How to run it
+1. Clone the github repo
+2. Open the project folder '''cd game-of-life'''
+3. To build and run the project execute: '''make run'''
+## How to play
+Each grid slot is a dead cell, click on cells to bring them alive!
+When you're ready press space to start the game
+To bring more cells alive the game must be paused, press space once again to pause it
+Pressing G the visual grid can be toggled on or of
