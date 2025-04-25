@@ -13,12 +13,12 @@ async fn main() {
         if is_key_pressed(KeyCode::Space) {
             is_running = !is_running;
         }
-        let status: &str;
+        let status: &str =
         if is_running {
-            status = "RUNNING"
+            "RUNNING"
         } else {
-            status = "PAUSED"
-        }
+            "PAUSED"
+        };
         if is_key_pressed(KeyCode::G) {
             is_grid_showing = !is_grid_showing;
         }
@@ -62,30 +62,24 @@ async fn main() {
         next_frame().await
     }
 }
-fn transition(matrix: &mut Vec<Vec<i32>>, neighbours: &Vec<Vec<i32>>) {
-    let mut row_index: usize = 0;
-    let mut col_index: usize = 0;
-    for row in neighbours {
-        for col in row {
+//Calculate transitions
+fn transition(matrix: &mut [Vec<i32>], neighbours: &[Vec<i32>]) {
+    for (row_index,row) in neighbours.iter().enumerate() {
+        for (col_index,col) in row.iter().enumerate() {
             if matrix[row_index][col_index] == 1 {
                 match *col {
                     0..=1 => matrix[row_index][col_index] = 0,
                     2..=3 => matrix[row_index][col_index] = 1,
                     _ => matrix[row_index][col_index] = 0,
                 }
-            } else {
-                if *col == 3 {
-                    matrix[row_index][col_index] = 1;
-                }
+            } else if *col == 3 {
+                matrix[row_index][col_index] = 1;
             }
-            col_index += 1;
         }
-        col_index = 0;
-        row_index += 1;
     }
 }
 //Process clicks
-fn process_clicks(matrix: &mut Vec<Vec<i32>>) {
+fn process_clicks(matrix: &mut [Vec<i32>]) {
     let height_scale = screen_height() / (matrix.len() as f32);
     let width_scale = screen_width() / (matrix[0].len() as f32);
     let (column_pixel, row_pixel) = mouse_position();
@@ -98,28 +92,21 @@ fn process_clicks(matrix: &mut Vec<Vec<i32>>) {
     }
 }
 //Calculate neighbours
-fn calculate_neighbour_amount_matrix(matrix: &Vec<Vec<i32>>) -> Vec<Vec<i32>> {
+fn calculate_neighbour_amount_matrix(matrix: &[Vec<i32>]) -> Vec<Vec<i32>> {
     let mut neighbour_amount_matrix = vec![vec![0; matrix[0].len()]; matrix.len()];
-    let mut row_index: usize = 0;
-    let mut column_index: usize = 0;
     //Iterate through the rows of the grid
-    for row in matrix {
+    for (row_index,row) in matrix.iter().enumerate() {
         //Iterate through the columns of the row
-        for _ in row {
+        for (column_index,_) in row.iter().enumerate() {
             //Calculate the amounts of neighbours a cell has and assing it in the grid
             neighbour_amount_matrix[row_index][column_index] =
                 get_neighbours_for(row_index, column_index, matrix);
-            //Move onto the next column
-            column_index += 1;
         }
-        //Reset column index and move onto the next row
-        column_index = 0;
-        row_index += 1;
     }
     neighbour_amount_matrix
 }
 //Get neighbours
-fn get_neighbours_for(row_index: usize, col_index: usize, matrix: &Vec<Vec<i32>>) -> i32 {
+fn get_neighbours_for(row_index: usize, col_index: usize, matrix: &[Vec<i32>]) -> i32 {
     let cell_row = row_index as i32;
     let cell_col = col_index as i32;
     //Init an array with all the coordinates of the cell neighbours
@@ -149,29 +136,27 @@ fn get_neighbours_for(row_index: usize, col_index: usize, matrix: &Vec<Vec<i32>>
     live_neighbours.len() as i32
 }
 //Draws the matrix as squares
-fn draw(matrix: &Vec<Vec<i32>>, grid_show: &bool) {
+fn draw(matrix: &[Vec<i32>], grid_show: &bool) {
     let height_scale = screen_height() / matrix.len() as f32;
     let width_scale = screen_width() / matrix[0].len() as f32;
 
-    let mut row_index: f32 = 0.0;
-    let mut col_index: f32 = 0.0;
-    for row in matrix {
+    for (row_index  ,row) in matrix.iter().enumerate() {
         if *grid_show {
             draw_line(
                 0.0,
-                row_index * height_scale,
+                (row_index as f32) * height_scale,
                 screen_width(),
-                row_index * height_scale,
+                (row_index as f32) * height_scale,
                 1.0,
                 LIGHTGRAY,
             );
         }
-        for column in row {
+        for (col_index,column) in row.iter().enumerate() {
             if *grid_show {
                 draw_line(
-                    col_index * width_scale,
+                    (col_index as f32) * width_scale,
                     0.0,
-                    col_index * width_scale,
+                    (col_index as f32) * width_scale,
                     screen_height(),
                     1.0,
                     LIGHTGRAY,
@@ -179,17 +164,14 @@ fn draw(matrix: &Vec<Vec<i32>>, grid_show: &bool) {
             }
             if *column == 1 {
                 draw_rectangle(
-                    col_index * width_scale,
-                    row_index * height_scale,
+                    (col_index as f32) * width_scale,
+                    (row_index as f32) * height_scale,
                     width_scale,
                     height_scale,
                     BLACK,
                 );
             }
-            col_index += 1.0;
         }
-        col_index = 0.0;
-        row_index += 1.0;
     }
 }
 
