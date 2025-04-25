@@ -54,7 +54,7 @@ fn transition(grid: &mut Vec<Vec<i32>>, neighbours: &Vec<Vec<i32>>) {
     }
 }
 //Process clicks
-fn process_clicks(grid: &mut Vec<Vec<i32>>){
+fn process_clicks(grid: &mut Vec<Vec<i32>>) {
     let height_scale = screen_height() / (grid.len() as f32);
     let width_scale = screen_width() / (grid[0].len() as f32);
     let (column_pixel, row_pixel) = mouse_position();
@@ -76,7 +76,8 @@ fn calculate_neighbour_amount_grid(grid: &Vec<Vec<i32>>) -> Vec<Vec<i32>> {
         //Iterate through the columns of the row
         for _ in row {
             //Calculate the amounts of neighbours a cell has and assing it in the grid
-            neighbour_amount_grid[row_index][column_index] = get_neighbours_for(row_index, column_index,grid);
+            neighbour_amount_grid[row_index][column_index] =
+                get_neighbours_for(row_index, column_index, grid);
             //Move onto the next column
             column_index += 1;
         }
@@ -87,22 +88,32 @@ fn calculate_neighbour_amount_grid(grid: &Vec<Vec<i32>>) -> Vec<Vec<i32>> {
     neighbour_amount_grid
 }
 //Get neighbours
-fn get_neighbours_for(row_index:usize,col_index:usize,grid:&Vec<Vec<i32>>) -> i32{
+fn get_neighbours_for(row_index: usize, col_index: usize, grid: &Vec<Vec<i32>>) -> i32 {
     let cell_row = row_index as i32;
     let cell_col = col_index as i32;
     //Init an array with all the coordinates of the cell neighbours
-    let neighbour_coordinates = [(cell_row-1,cell_col-1), //UP Left
-                                                            (cell_row-1,cell_col), //UP
-                                                            (cell_row-1,cell_col+1), //UP Right
-                                                            (cell_row,cell_col-1), //Left
-                                                            (cell_row,cell_col+1), //Right
-                                                            (cell_row+1,cell_col-1), //DOWN left
-                                                            (cell_row+1,cell_col), //DOWN
-                                                            (cell_row+1,cell_col+1),]; //DOWN Right
+    let neighbour_coordinates = [
+        (cell_row - 1, cell_col - 1), //UP Left
+        (cell_row - 1, cell_col),     //UP
+        (cell_row - 1, cell_col + 1), //UP Right
+        (cell_row, cell_col - 1),     //Left
+        (cell_row, cell_col + 1),     //Right
+        (cell_row + 1, cell_col - 1), //DOWN left
+        (cell_row + 1, cell_col),     //DOWN
+        (cell_row + 1, cell_col + 1),
+    ]; //DOWN Right
     //Filter out neighbours that are out of bounds
-    let neighbours_on_grid: Vec<&(i32, i32)> = neighbour_coordinates.iter().filter(|(row,col)| (0..(grid.len() as i32)).contains(row) && (0..(grid[0].len() as i32)).contains(col)).collect();
+    let neighbours_on_grid: Vec<&(i32, i32)> = neighbour_coordinates
+        .iter()
+        .filter(|(row, col)| {
+            (0..(grid.len() as i32)).contains(row) && (0..(grid[0].len() as i32)).contains(col)
+        })
+        .collect();
     //Filter death cells
-    let live_neighbours:Vec<_>= neighbours_on_grid.iter().filter(|(row,col)| grid[*row as usize][*col as usize] == 1).collect();
+    let live_neighbours: Vec<_> = neighbours_on_grid
+        .iter()
+        .filter(|(row, col)| grid[*row as usize][*col as usize] == 1)
+        .collect();
     //Return the amount of live neighbours
     live_neighbours.len() as i32
 }
@@ -114,6 +125,7 @@ fn draw(grid: &Vec<Vec<i32>>, grid_show: &bool) {
     let mut row_index: f32 = 0.0;
     let mut col_index: f32 = 0.0;
     for row in grid {
+        draw_line(0.0, y1, screen_width(), y2, thickness, color);
         for column in row {
             if *column == 1 {
                 draw_rectangle(
@@ -121,16 +133,6 @@ fn draw(grid: &Vec<Vec<i32>>, grid_show: &bool) {
                     row_index * height_scale,
                     width_scale,
                     height_scale,
-                    BLACK,
-                );
-            }
-            if *grid_show {
-                draw_rectangle_lines(
-                    col_index * width_scale,
-                    row_index * height_scale,
-                    width_scale,
-                    height_scale,
-                    1.0,
                     BLACK,
                 );
             }
