@@ -1,7 +1,8 @@
 # Game of life
-An implementation of Conway's game of life using Rust and Wasm
+An implementation of Conway's game of life using Rust and Macroquad
 ## Needed
 macroquad = "0.4"
+
 rust = "1.86.0"
 ## How to run it
 1. Clone the github repo
