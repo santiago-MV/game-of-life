@@ -8,8 +8,8 @@ rust = "1.86.0"
 
 ## How to run it
 1. Clone the github repo
-2. Open the project folder ```cd game-of-life```
-3. To build and run the project execute: ```make run```
+2. Open the project folder `cd game-of-life`
+3. To build and run the project execute: `make run`
 
 ## How to play
 Each grid slot is a dead cell, click on cells to bring them alive!
