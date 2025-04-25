@@ -56,7 +56,7 @@ async fn main() {
             //Update cells state, define which cells pass to the next generation
             transition(&mut matrix, &alice_neighbours_matrix);
         }
-        std::thread::sleep(std::time::Duration::from_millis(150));
+        std::thread::sleep(std::time::Duration::from_millis(60));
         next_frame().await
     }
 }
