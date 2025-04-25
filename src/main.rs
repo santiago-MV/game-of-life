@@ -46,7 +46,7 @@ async fn main() {
             DARKBLUE,
         );
         draw_text(
-            "Press <G> to toggle grid on/of",
+            "Press <G> to toggle grid on/off",
             5.0,
             screen_height() - 10.0,
             25.0,
