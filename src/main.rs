@@ -13,12 +13,7 @@ async fn main() {
         if is_key_pressed(KeyCode::Space) {
             is_running = !is_running;
         }
-        let status: &str =
-        if is_running {
-            "RUNNING"
-        } else {
-            "PAUSED"
-        };
+        let status: &str = if is_running { "RUNNING" } else { "PAUSED" };
         if is_key_pressed(KeyCode::G) {
             is_grid_showing = !is_grid_showing;
         }
@@ -64,8 +59,8 @@ async fn main() {
 }
 //Calculate transitions
 fn transition(matrix: &mut [Vec<i32>], neighbours: &[Vec<i32>]) {
-    for (row_index,row) in neighbours.iter().enumerate() {
-        for (col_index,col) in row.iter().enumerate() {
+    for (row_index, row) in neighbours.iter().enumerate() {
+        for (col_index, col) in row.iter().enumerate() {
             if matrix[row_index][col_index] == 1 {
                 match *col {
                     0..=1 => matrix[row_index][col_index] = 0,
@@ -95,9 +90,9 @@ fn process_clicks(matrix: &mut [Vec<i32>]) {
 fn calculate_neighbour_amount_matrix(matrix: &[Vec<i32>]) -> Vec<Vec<i32>> {
     let mut neighbour_amount_matrix = vec![vec![0; matrix[0].len()]; matrix.len()];
     //Iterate through the rows of the grid
-    for (row_index,row) in matrix.iter().enumerate() {
+    for (row_index, row) in matrix.iter().enumerate() {
         //Iterate through the columns of the row
-        for (column_index,_) in row.iter().enumerate() {
+        for (column_index, _) in row.iter().enumerate() {
             //Calculate the amounts of neighbours a cell has and assing it in the grid
             neighbour_amount_matrix[row_index][column_index] =
                 get_neighbours_for(row_index, column_index, matrix);
@@ -140,7 +135,7 @@ fn draw(matrix: &[Vec<i32>], grid_show: &bool) {
     let height_scale = screen_height() / matrix.len() as f32;
     let width_scale = screen_width() / matrix[0].len() as f32;
 
-    for (row_index  ,row) in matrix.iter().enumerate() {
+    for (row_index, row) in matrix.iter().enumerate() {
         if *grid_show {
             draw_line(
                 0.0,
@@ -151,7 +146,7 @@ fn draw(matrix: &[Vec<i32>], grid_show: &bool) {
                 LIGHTGRAY,
             );
         }
-        for (col_index,column) in row.iter().enumerate() {
+        for (col_index, column) in row.iter().enumerate() {
             if *grid_show {
                 draw_line(
                     (col_index as f32) * width_scale,
