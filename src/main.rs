@@ -1,11 +1,16 @@
 use macroquad::prelude::*;
-//SET THE GRID VALUES
-const GRID_WIDTH: usize = 100;
-const GRID_HEIGHT: usize = 100;
+//Set the matrix dimensions
+//Amount of rows (height) and columns (width)
+const MATRIX_WIDTH: usize = 100;
+const MATRIX_HEIGHT: usize = 100;
 
 #[macroquad::main("BasicShapes")]
 async fn main() {
-    let mut matrix = vec![vec![0; GRID_WIDTH]; GRID_HEIGHT];
+    //Matrix that represents the current state of the game
+    //Each item represents a cell whos values can be:
+    //1 -> Live cell
+    //0 -> Death cell
+    let mut matrix = vec![vec![0; MATRIX_WIDTH]; MATRIX_HEIGHT];
 
     let mut is_running = false;
     let mut is_grid_showing = false;
@@ -20,14 +25,11 @@ async fn main() {
         if !is_running && is_mouse_button_pressed(MouseButton::Left) {
             process_clicks(&mut matrix);
         }
-        //Color background
         clear_background(WHITE);
-        //Draw the current state of the grid
         draw(&matrix, &is_grid_showing);
-        //DRAW text
         draw_text(status, 5.0, 30.0, 50.0, DARKBLUE);
         draw_text(
-            "Cells can be edited on pause",
+            "Cells can only be edited on pause",
             5.0,
             screen_height() - 50.0,
             25.0,
@@ -47,19 +49,22 @@ async fn main() {
             25.0,
             DARKBLUE,
         );
-        //Do transitions
+        //Calculate the next state of the game -> That means which cells live through and which doesn't
         if is_running {
-            //Calculate neighbour_grid and transitions
-            let neighbour_grid = calculate_neighbour_amount_matrix(&matrix);
-            transition(&mut matrix, &neighbour_grid);
+            //Get the matrix with the amount of live neighbours for each cell
+            let alice_neighbours_matrix = calculate_alive_neighbour_amount_matrix(&matrix);
+            //Update cells state, define which cells pass to the next generation
+            transition(&mut matrix, &alice_neighbours_matrix);
         }
-        std::thread::sleep(std::time::Duration::from_millis(1));
+        std::thread::sleep(std::time::Duration::from_millis(150));
         next_frame().await
     }
 }
-//Calculate transitions
-fn transition(matrix: &mut [Vec<i32>], neighbours: &[Vec<i32>]) {
-    for (row_index, row) in neighbours.iter().enumerate() {
+//Calculate the next state of each cell using their current state and number of alive neighbours
+//The matrix arugment represents the current state of each cell
+//The alive_neighbours_amount_matrix argument represents the amount of live neighbours each cell has
+fn transition(matrix: &mut [Vec<i32>], alive_neighbours_amount_matrix: &[Vec<i32>]) {
+    for (row_index, row) in alive_neighbours_amount_matrix.iter().enumerate() {
         for (col_index, col) in row.iter().enumerate() {
             if matrix[row_index][col_index] == 1 {
                 match *col {
@@ -73,7 +78,8 @@ fn transition(matrix: &mut [Vec<i32>], neighbours: &[Vec<i32>]) {
         }
     }
 }
-//Process clicks
+//Logic for bringing a cell alive after it was clicked by the user
+//The matrix argument represents the current state, the state of the clicked cell will be updated in that matrix
 fn process_clicks(matrix: &mut [Vec<i32>]) {
     let height_scale = screen_height() / (matrix.len() as f32);
     let width_scale = screen_width() / (matrix[0].len() as f32);
@@ -86,8 +92,12 @@ fn process_clicks(matrix: &mut [Vec<i32>]) {
         matrix[row_index][column_index] = 1;
     }
 }
-//Calculate neighbours
-fn calculate_neighbour_amount_matrix(matrix: &[Vec<i32>]) -> Vec<Vec<i32>> {
+//Calculate a matrix with the amount of alive neighbours each cell has
+//Each cells neighbour are the other cells that are horizontally, vertically or diagonally adjacent to it (8 max)
+//The argument represents the current matrix state
+//The argument matrix and the one returned share dimensions, so indexes represent the same cell in both matrices
+//The returned matrix has the amount of alive neighbours for each cell
+fn calculate_alive_neighbour_amount_matrix(matrix: &[Vec<i32>]) -> Vec<Vec<i32>> {
     let mut neighbour_amount_matrix = vec![vec![0; matrix[0].len()]; matrix.len()];
     //Iterate through the rows of the grid
     for (row_index, row) in matrix.iter().enumerate() {
@@ -95,13 +105,16 @@ fn calculate_neighbour_amount_matrix(matrix: &[Vec<i32>]) -> Vec<Vec<i32>> {
         for (column_index, _) in row.iter().enumerate() {
             //Calculate the amounts of neighbours a cell has and assing it in the grid
             neighbour_amount_matrix[row_index][column_index] =
-                get_neighbours_for(row_index, column_index, matrix);
+                get_amount_of_alive_neighbours(row_index, column_index, matrix);
         }
     }
     neighbour_amount_matrix
 }
-//Get neighbours
-fn get_neighbours_for(row_index: usize, col_index: usize, matrix: &[Vec<i32>]) -> i32 {
+//Get the amount of alive neighbours a cell has
+//The matrix represents the current state of the game
+//The first two arguments represent the indexes of that cell in the matrix (cell position)
+//The returned value represents the amount of alive neighbours the cell has
+fn get_amount_of_alive_neighbours(row_index: usize, col_index: usize, matrix: &[Vec<i32>]) -> i32 {
     let cell_row = row_index as i32;
     let cell_col = col_index as i32;
     //Init an array with all the coordinates of the cell neighbours
@@ -130,13 +143,17 @@ fn get_neighbours_for(row_index: usize, col_index: usize, matrix: &[Vec<i32>]) -
     //Return the amount of live neighbours
     live_neighbours.len() as i32
 }
-//Draws the matrix as squares
+//Draw the current state of the game
+//Each cell is represented by a rectangle that can be:
+//White -> Dead cell
+//Black -> Alive cell
 fn draw(matrix: &[Vec<i32>], grid_show: &bool) {
     let height_scale = screen_height() / matrix.len() as f32;
     let width_scale = screen_width() / matrix[0].len() as f32;
 
     for (row_index, row) in matrix.iter().enumerate() {
         if *grid_show {
+            //Draws the horizontal lines of the grid
             draw_line(
                 0.0,
                 (row_index as f32) * height_scale,
@@ -148,6 +165,7 @@ fn draw(matrix: &[Vec<i32>], grid_show: &bool) {
         }
         for (col_index, column) in row.iter().enumerate() {
             if *grid_show {
+                //Draws the vertical lines of the grid
                 draw_line(
                     (col_index as f32) * width_scale,
                     0.0,
@@ -158,6 +176,7 @@ fn draw(matrix: &[Vec<i32>], grid_show: &bool) {
                 );
             }
             if *column == 1 {
+                //Draw cells
                 draw_rectangle(
                     (col_index as f32) * width_scale,
                     (row_index as f32) * height_scale,
@@ -183,7 +202,7 @@ mod tests {
         test_matrix[3][3] = 1;
         test_matrix[2][3] = 1;
 
-        let neighbours = calculate_neighbour_amount_matrix(&test_matrix);
+        let neighbours = calculate_alive_neighbour_amount_matrix(&test_matrix);
         transition(&mut test_matrix, &neighbours);
         assert_eq!(test_matrix, vec![vec![0; 4]; 4])
     }
@@ -201,7 +220,7 @@ mod tests {
         test_matrix[2][4] = 1;
         test_matrix[4][3] = 1;
 
-        let neighbours = calculate_neighbour_amount_matrix(&test_matrix);
+        let neighbours = calculate_alive_neighbour_amount_matrix(&test_matrix);
         transition(&mut test_matrix, &neighbours);
         assert_eq!(test_matrix[0][1], 1);
         assert_eq!(test_matrix[3][3], 1);
@@ -225,7 +244,7 @@ mod tests {
         test_matrix[6][5] = 1;
         test_matrix[6][7] = 1;
 
-        let neighbours = calculate_neighbour_amount_matrix(&test_matrix);
+        let neighbours = calculate_alive_neighbour_amount_matrix(&test_matrix);
         transition(&mut test_matrix, &neighbours);
         assert_eq!(test_matrix[3][3], 0);
         assert_eq!(test_matrix[6][6], 0);
@@ -239,7 +258,7 @@ mod tests {
         test_matrix[2][4] = 1;
         test_matrix[2][3] = 1;
 
-        let neighbours = calculate_neighbour_amount_matrix(&test_matrix);
+        let neighbours = calculate_alive_neighbour_amount_matrix(&test_matrix);
         transition(&mut test_matrix, &neighbours);
         assert_eq!(test_matrix[3][3], 1);
     }
